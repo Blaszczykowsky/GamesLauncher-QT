@@ -36,6 +36,7 @@ void Launcher::setupUI()
     gameSelector = new QComboBox(this);
     gameSelector->addItem("Wisielec", (int)GameType::Wisielec);
     gameSelector->addItem("Kości (Yahtzee)", (int)GameType::Kosci);
+    gameSelector->addItem("Chinczyk (Ludo)", (int)GameType::Chinczyk);
     gameSelector->setStyleSheet("padding: 5px; font-size: 14px;");
     gameLay->addWidget(gameSelector);
     mainLayout->addWidget(gameGroup);

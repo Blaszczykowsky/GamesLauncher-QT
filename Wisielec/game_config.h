@@ -7,8 +7,8 @@
 enum class GameType
 {
     Wisielec,
-    Kosci
-    //Chinczyk
+    Kosci,
+    Chinczyk
 };
 
 enum class GameMode

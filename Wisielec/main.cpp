@@ -2,6 +2,7 @@
 #include "launcher.h"
 #include "wisielec_window.h"
 #include "kosci_window.h"
+#include "chinczyk_window.h"
 
 int main(int argc, char *argv[])
 {
@@ -28,6 +29,14 @@ int main(int argc, char *argv[])
                 launcher.show();
             });
             currentGame = k;
+        }
+        else if(config.gameType == GameType::Chinczyk) {
+            auto *c = new ChinczykWindow(config);
+            QObject::connect(c, &ChinczykWindow::gameClosed, [&](){
+                if(currentGame) { currentGame->close(); currentGame->deleteLater(); currentGame = nullptr; }
+                launcher.show();
+            });
+            currentGame = c;
         }
 
         if(currentGame) {

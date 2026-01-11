@@ -31,6 +31,26 @@ add_executable(MultiGameLauncher
     kosci_config.h
     oknogry.ui
 
+    # --- Chinczyk (Ludo) ---
+    chinczyk_window.cpp
+    chinczyk_window.h
+    boardscene.cpp
+    boardscene.h
+    tokenitem.cpp
+    tokenitem.h
+    gra.cpp
+    gra.h
+    gracz.cpp
+    gracz.h
+    pionek.cpp
+    pionek.h
+    plansza.cpp
+    plansza.h
+    kostka.cpp
+    kostka.h
+    chinczyk_network.cpp
+    chinczyk_network.h
+
     # Zasoby
     zasoby.qrc
 )
