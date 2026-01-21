@@ -6,7 +6,6 @@ static int kolorIndex(KolorGracza k) { return static_cast<int>(k); }
 
 QPointF Plansza::gridNaPunkt(int gx, int gy) const
 {
-    // siatka 15x15: (0..14), srodek (7,7) -> (0,0)
     const double x = (gx - 7) * m_rozmiarPola;
     const double y = (gy - 7) * m_rozmiarPola;
     return QPointF(x, y);
@@ -14,10 +13,6 @@ QPointF Plansza::gridNaPunkt(int gx, int gy) const
 
 Plansza::Plansza()
 {
-    // ========= TOR GLOWNY (52) =========
-    // Kolejnosc indeksow 0..51 (start = (6,0)), potem zgodnie z ruchem wskazowek zegara.
-    // Starty sa co 13 pol: 0 (gora), 13 (lewo), 26 (dol), 39 (prawo).
-
     const QVector<QPoint> sciezka = {
         {6,0},{7,0},{8,0},{8,1},{8,2},{8,3},{8,4},{8,5},
         {9,6},{10,6},{11,6},{12,6},{13,6},{14,6},{14,7},{14,8},
@@ -34,13 +29,6 @@ Plansza::Plansza()
     for (const auto& p : sciezka)
         m_torGlowny.push_back(gridNaPunkt(p.x(), p.y()));
 
-    // ========= TORY DOMOWE (4 x 6) =========
-    // 6 pol "do mety" (meta u Ciebie to krok==57, czyli 6-te pole domu)
-    // Czerwony (gora)   -> kolumna 7: (7,1..6)
-    // Zolty (lewo)      -> wiersz 7:  (1..6,7)
-    // Niebieski (dol)   -> kolumna 7: (7,13..8) w gore
-    // Zielony (prawo)   -> wiersz 7:  (13..8,7) w lewo
-
     m_torDomowy.resize(4);
     for (int k = 0; k < 4; ++k)
         m_torDomowy[k].resize(4);
@@ -53,9 +41,6 @@ Plansza::Plansza()
     for (int i = 0; i < 4; ++i) m_torDomowy[kolorIndex(KolorGracza::Niebieski)][i]= gridNaPunkt(7, 13 - i);
     // Zielony
     for (int i = 0; i < 4; ++i) m_torDomowy[kolorIndex(KolorGracza::Zielony)][i]  = gridNaPunkt(13 - i, 7);
-
-    // ========= BAZY (4 x 4) =========
-    // Rogi: czerwony (LT), zielony (PT), zolty (LB), niebieski (PB)
 
     m_baza.resize(4);
     for (int k = 0; k < 4; ++k)
@@ -109,14 +94,13 @@ QPointF Plansza::pozycjaDlaPionka(const Gracz& gracz, const Pionek& pionek) cons
     if (pionek.wBazie())
         return pozycjaBaza(pionek.kolor(), pionek.id());
 
-    // tor glowny 0..51
     if (pionek.krok() <= 51)
     {
         int abs = (gracz.indeksStartu() + pionek.krok()) % 52;
         return pozycjaTorGlowny(abs);
     }
 
-    // dom 52..57
-    int idx = pionek.krok() - 52; // 0..5
+    int idx = pionek.krok() - 52; 
     return pozycjaTorDomowy(pionek.kolor(), idx);
 }
+
