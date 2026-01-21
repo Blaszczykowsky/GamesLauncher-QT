@@ -29,8 +29,8 @@ private:
     void zbudujUI();
     void podlaczSygnaly();
 
-    void initTryb();     // lokalny/solo/siec
-    void initSiec();     // host/klient
+    void initTryb();    
+    void initSiec();     
 
     void startGrySieciowejHost();
     void rozpocznijNowaGreSieciowaHost();
@@ -56,12 +56,9 @@ private:
 
 private:
     GameLaunchConfig m_config;
-
-    // --- gra ---
     Gra m_gra;
     BoardScene* m_scena = nullptr;
 
-    // --- UI ---
     QGraphicsView* m_view = nullptr;
     QPushButton* m_btnNowa = nullptr;
     QPushButton* m_btnRzut = nullptr;
@@ -74,20 +71,18 @@ private:
     QLabel* m_lblSiec = nullptr;
     QLabel* m_lblLobby = nullptr;
 
-    // --- siec ---
     bool m_siecAktywna = false;
     bool m_jestemHostem = false;
     bool m_graRozpoczeta = false;
 
-    int m_mojSlot = -1;          // klient dostaje z welcome
-    int m_totalPlayers = 0;      // lobby/ustawienie hosta
+    int m_mojSlot = -1;          
+    int m_totalPlayers = 0;      
     KolorGracza m_mojKolor = KolorGracza::Czerwony;
 
     int m_ostatniGid = -1;
 
     ChinczykSerwer m_serwer;
     ChinczykKlient m_klient;
-
-    // ostatnie lobby (do wyswietlenia)
     QJsonObject m_lobby;
 };
+
