@@ -23,9 +23,10 @@ private:
     QPointF gridNaPunkt(int gx, int gy) const;
 
 private:
-    QVector<QPointF> m_torGlowny;               // 52
-    QVector<QVector<QPointF>> m_torDomowy;      // [4][6]
-    QVector<QVector<QPointF>> m_baza;           // [4][4]
+    QVector<QPointF> m_torGlowny;              
+    QVector<QVector<QPointF>> m_torDomowy;      
+    QVector<QVector<QPointF>> m_baza;           
 
-    double m_rozmiarPola = 40.0;                // px
+    double m_rozmiarPola = 40.0;                
 };
+
