@@ -8,7 +8,6 @@ BoardScene::BoardScene(Gra* gra, QObject* parent)
     : QGraphicsScene(parent), m_gra(gra)
 {
     setSceneRect(-420, -420, 840, 840);
-    //rysujPlansze();
     resetujTlo();
 }
 
@@ -37,7 +36,6 @@ void BoardScene::rysujPlansze()
 {
     clear();
 
-    // Tor glowny
     QPen pen(Qt::black, 1);
     for (int i = 0; i < 52; ++i)
     {
@@ -46,7 +44,6 @@ void BoardScene::rysujPlansze()
         kolo->setZValue(-10);
     }
 
-    // Tory domowe (wyszarzony kolor)
     for (int k = 0; k < 4; ++k)
     {
         KolorGracza kg = static_cast<KolorGracza>(k);
@@ -59,8 +56,6 @@ void BoardScene::rysujPlansze()
             kolo->setZValue(-10);
         }
     }
-
-    // Bazy (wyszarzony kolor)
     for (int k = 0; k < 4; ++k)
     {
         KolorGracza kg = static_cast<KolorGracza>(k);
@@ -73,8 +68,6 @@ void BoardScene::rysujPlansze()
             kolo->setZValue(-10);
         }
     }
-
-    // Srodek
     addEllipse(-16, -16, 32, 32, pen, QBrush(QColor(240,240,240)))->setZValue(-10);
 
 }
@@ -89,8 +82,6 @@ QString BoardScene::kluczPola(const Gracz& g, const Pionek& p) const
         int abs = (g.indeksStartu() + p.krok()) % 52;
         return "tor_" + QString::number(abs);
     }
-
-    // dom
     return "dom_" + QString::number((int)p.kolor()) + "_" + QString::number(p.krok() - 52);
 }
 
@@ -119,7 +110,6 @@ void BoardScene::utworzTokenyJesliTrzeba()
 
 void BoardScene::ustawPozycjeTokenow()
 {
-    // grupowanie tokenow na tym samym polu (z przesunieciami)
     QHash<QString, QVector<TokenItem*>> grupy;
 
     for (const auto& g : m_gra->gracze())
@@ -138,13 +128,9 @@ void BoardScene::ustawPozycjeTokenow()
     {
         const QString& key = it.key();
         auto& lista = it.value();
-
-        // znajdz przykladowy pionek, zeby policzyc bazowa pozycje
         QPointF bazowa(0,0);
-
-        // odtworz pozycje po kluczu (najprosciej: wezm pierwszy item i policzemy z logiki)
-        // przejedziemy po graczach jeszcze raz, aby znalezc pionek o tym samym kluczu
         bool znaleziono = false;
+        
         for (const auto& g : m_gra->gracze())
         {
             for (const auto& p : g.pionki())
@@ -159,7 +145,6 @@ void BoardScene::ustawPozycjeTokenow()
             if (znaleziono) break;
         }
 
-        // przesuniecia (max 2 powinno wystarczyc)
         for (int i = 0; i < lista.size(); ++i)
         {
             QPointF off(0,0);
@@ -175,7 +160,6 @@ void BoardScene::ustawPozycjeTokenow()
 
 void BoardScene::ustawPodswietlenia()
 {
-    // reset
     for (auto* item : m_tokeny)
         item->ustawPodswietlenie(false);
 
@@ -200,7 +184,8 @@ void BoardScene::odswiez()
 
 void BoardScene::resetujTlo()
 {
-    clear();          // usuwa wszystkie elementy sceny (w tym stare pionki)
-    m_tokeny.clear(); // wazne: kasujemy mapowanie na stare wskaźniki
-    rysujPlansze();   // rysujemy plansze od nowa
+    clear();          
+    m_tokeny.clear(); 
+    rysujPlansze();   
 }
+
