@@ -13,7 +13,6 @@ public:
     KolorGracza kolor() const { return m_kolor; }
     int id() const { return m_id; }
 
-    // -1 baza, 0..51 tor glowny (wzgledem startu gracza), 52..57 tor domowy
     int krok() const { return m_krok; }
     void ustawKrok(int nowyKrok) { m_krok = nowyKrok; }
 
@@ -25,5 +24,6 @@ public:
 private:
     KolorGracza m_kolor;
     int m_id;
-    int m_krok; // start: -1
+    int m_krok; 
 };
+
