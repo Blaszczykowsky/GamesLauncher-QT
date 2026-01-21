@@ -75,12 +75,10 @@ void ChinczykWindow::zbudujUI()
 
 void ChinczykWindow::podlaczSygnaly()
 {
-    // klik pionka z planszy
     connect(m_scena, &BoardScene::pionekKlikniety, this, [this](Pionek* p){
         obsluzPionekKlik(p);
     });
 
-    // START (tylko host w sieci)
     connect(m_btnStart, &QPushButton::clicked, this, [this](){
         if (!m_siecAktywna || !m_jestemHostem) return;
         if (m_graRozpoczeta) return;
@@ -94,24 +92,18 @@ void ChinczykWindow::podlaczSygnaly()
         startGrySieciowejHost();
     });
 
-    // zmiana liczby graczy (tylko host, tylko w lobby, tylko bez klientow)
     connect(m_comboGracze, &QComboBox::currentIndexChanged, this, [this](int){
         if (!m_siecAktywna || !m_jestemHostem) return;
         if (m_graRozpoczeta) return;
-
-        // bezpiecznie: serwer pozwala zmienic tylko gdy brak klientow
         int n = m_comboGracze->currentData().toInt();
         m_serwer.ustawDocelowaLiczbeGraczy(n);
     });
 
-    // NOWA GRA
     connect(m_btnNowa, &QPushButton::clicked, this, [this](){
 
-        // klient w sieci nie moze
         if (m_siecAktywna && !m_jestemHostem)
             return;
 
-        // host w sieci: restart gry dla tej samej liczby graczy (bez rozlaczania)
         if (m_siecAktywna && m_jestemHostem)
         {
             auto odp = QMessageBox::question(
@@ -128,7 +120,6 @@ void ChinczykWindow::podlaczSygnaly()
             return;
         }
 
-        // lokalnie jak bylo
         auto czyGraTrwa = [this]() -> bool
         {
             if (m_gra.gracze().isEmpty()) return false;
@@ -163,12 +154,10 @@ void ChinczykWindow::podlaczSygnaly()
         m_gra.nowaGra(n);
     });
 
-    // RZUT
     connect(m_btnRzut, &QPushButton::clicked, this, [this](){
         obsluzRzutKlik();
     });
 
-    // odswiezanie UI przy zmianie stanu
     connect(&m_gra, &Gra::stanZmieniony, this, [this](){
 
         if (!m_gra.gracze().isEmpty())
@@ -184,7 +173,6 @@ void ChinczykWindow::podlaczSygnaly()
         odswiezUiSieci();
         m_scena->odswiez();
 
-        // host rozsyla stan po kazdej zmianie (tylko gdy gra wystartowala)
         wyslijStanJesliHost();
     });
 
@@ -192,10 +180,8 @@ void ChinczykWindow::podlaczSygnaly()
         statusBar()->showMessage(t, 5000);
     });
 
-    // koniec gry
     connect(&m_gra, &Gra::koniecGry, this, [this](const QString& zwyciezca){
 
-        // lokalnie - jak bylo
         if (!m_siecAktywna)
         {
             QMessageBox box(this);
@@ -228,8 +214,6 @@ void ChinczykWindow::podlaczSygnaly()
 
             return;
         }
-
-        // siec: tylko host decyduje, klienci dostana CH_GAMEOVER
         if (!m_jestemHostem)
             return;
 
@@ -261,7 +245,6 @@ void ChinczykWindow::podlaczSygnaly()
         if (btnKont && box.clickedButton() == btnKont)
         {
             m_gra.kontynuujPoWygranej();
-            // stan poleci do wszystkich przez wyslijStanJesliHost()
         }
     });
 }
@@ -269,8 +252,6 @@ void ChinczykWindow::podlaczSygnaly()
 void ChinczykWindow::initTryb()
 {
     m_siecAktywna = (m_config.mode == GameMode::NetHost || m_config.mode == GameMode::NetClient);
-
-    // domyslnie ukryj rzeczy sieciowe
     m_lblSiec->setText("");
     m_lblLobby->setText("");
     m_btnStart->setVisible(false);
@@ -282,7 +263,6 @@ void ChinczykWindow::initTryb()
         return;
     }
 
-    // lokalnie / solo
     m_graRozpoczeta = true;
 
     int n = m_comboGracze->currentData().toInt();
@@ -291,15 +271,12 @@ void ChinczykWindow::initTryb()
 
 void ChinczykWindow::initSiec()
 {
-    // w sieci: combo nie dla klienta
     if (m_config.mode == GameMode::NetClient)
         m_comboGracze->setEnabled(false);
 
-    // klient nie ma nowej gry
     if (m_config.mode == GameMode::NetClient)
         m_btnNowa->setEnabled(false);
 
-    // start widoczny tylko na hoscie
     m_btnStart->setVisible(m_config.mode == GameMode::NetHost);
 
     if (m_config.mode == GameMode::NetHost)
@@ -356,7 +333,6 @@ void ChinczykWindow::ustawLobbyZJson(const QJsonObject& lobby)
 
     m_totalPlayers = lobby.value("totalPlayers").toInt(m_totalPlayers);
 
-    // tekst "Polaczeni X/N"
     int pol = 0;
     QJsonArray players = lobby.value("players").toArray();
     for (const auto& v : players)
@@ -368,17 +344,15 @@ void ChinczykWindow::ustawLobbyZJson(const QJsonObject& lobby)
 
     m_lblLobby->setText("Polaczeni: " + QString::number(pol) + "/" + QString::number(m_totalPlayers));
 
-    // host: blokuj combo gdy juz ktos dolaczyl
     if (m_siecAktywna && m_jestemHostem && !m_graRozpoczeta)
     {
-        bool ktosJest = (pol > 1); // host + ktos
+        bool ktosJest = (pol > 1);
         if (ktosJest)
             m_comboGracze->setEnabled(false);
     }
 
     if (m_siecAktywna && !m_jestemHostem)
     {
-        // klient i tak nie zmienia
         m_comboGracze->setEnabled(false);
     }
 }
@@ -393,12 +367,9 @@ void ChinczykWindow::odswiezUiSieci()
         return;
     }
 
-    // w lobby (przed startem)
     if (!m_graRozpoczeta)
     {
         m_btnRzut->setEnabled(false);
-
-        // w lobby "Nowa gra" nic nie daje (gra jeszcze nie wystartowala)
         m_btnNowa->setEnabled(false);
 
         if (m_jestemHostem)
@@ -413,7 +384,6 @@ void ChinczykWindow::odswiezUiSieci()
         return;
     }
 
-    // w trakcie gry
     if (m_jestemHostem)
     {
         m_btnNowa->setEnabled(true);
@@ -422,8 +392,6 @@ void ChinczykWindow::odswiezUiSieci()
     {
         m_btnNowa->setEnabled(false);
     }
-
-    // rzut tylko jak moja tura i nie rzucono
     bool moja = czyMojaTura();
     m_btnRzut->setEnabled(moja && !m_gra.czyRzucono() && !m_gra.czyOczekujeNaDecyzje());
 }
@@ -437,10 +405,6 @@ bool ChinczykWindow::czyMojaTura() const
 
 KolorGracza ChinczykWindow::kolorDlaSlot(int slot) const
 {
-    // sloty: 0..N-1
-    // 2: 0=Czerwony, 1=Niebieski
-    // 3: 0=Czerwony, 1=Zielony, 2=Niebieski
-    // 4: 0=Czerwony, 1=Zielony, 2=Niebieski, 3=Zolty
     if (m_totalPlayers <= 2)
     {
         if (slot == 0) return KolorGracza::Czerwony;
@@ -452,7 +416,6 @@ KolorGracza ChinczykWindow::kolorDlaSlot(int slot) const
         if (slot == 1) return KolorGracza::Zielony;
         return KolorGracza::Niebieski;
     }
-    // 4
     if (slot == 0) return KolorGracza::Czerwony;
     if (slot == 1) return KolorGracza::Zielony;
     if (slot == 2) return KolorGracza::Niebieski;
@@ -461,12 +424,12 @@ KolorGracza ChinczykWindow::kolorDlaSlot(int slot) const
 
 Pionek* ChinczykWindow::znajdzPionek(KolorGracza kolor, int id)
 {
-    auto& gracze = m_gra.gracze();          // <- NIE const
-    for (auto& g : gracze)                  // <- NIE const
+    auto& gracze = m_gra.gracze();      
+    for (auto& g : gracze)                 
     {
         if (g.kolor() != kolor) continue;
         if (id < 0 || id >= g.pionki().size()) return nullptr;
-        return &g.pionki()[id];             // <- teraz to jest Pionek*
+        return &g.pionki()[id];            
     }
     return nullptr;
 }
@@ -478,7 +441,6 @@ void ChinczykWindow::startGrySieciowejHost()
         QMessageBox::information(this, "Lobby", "Brakuje graczy do startu.");
         return;
     }
-    // host wybiera finalna liczbe z serwera
     m_totalPlayers = m_serwer.docelowaLiczbaGraczy();
 
     if (m_scena)
@@ -487,7 +449,6 @@ void ChinczykWindow::startGrySieciowejHost()
     m_gra.nowaGra(m_totalPlayers);
     m_graRozpoczeta = true;
 
-    // rozeslij start + stan
     QJsonObject msg;
     msg["t"] = "CH_START";
     msg["totalPlayers"] = m_totalPlayers;
@@ -507,8 +468,6 @@ void ChinczykWindow::rozpocznijNowaGreSieciowaHost()
     }
     if (!m_jestemHostem) return;
 
-    // Jesli gra jeszcze nie wystartowala, to jest lobby.
-    // NIE wolno startowac gry samemu.
     if (!m_graRozpoczeta)
     {
         statusBar()->showMessage("Lobby: uzyj 'Start gry' po dolaczeniu graczy.", 4000);
@@ -613,7 +572,6 @@ void ChinczykWindow::obsluzPionekKlik(Pionek* p)
     }
     else
     {
-        // klient: prosba do hosta
         QJsonObject msg;
         msg["t"] = "CH_REQ_MOVE";
         msg["slot"] = m_mojSlot;
@@ -628,14 +586,9 @@ void ChinczykWindow::obsluzMsgHost(int slot, const QJsonObject& msg)
 
     if (!m_graRozpoczeta)
     {
-        // przed startem gry ignorujemy ruchy
         return;
     }
-
-    // slot -> kolor
     KolorGracza kolor = kolorDlaSlot(slot);
-
-    // tylko gracz w swojej turze moze prosic o akcje
     if (m_gra.gracze().isEmpty()) return;
     if (m_gra.aktualnyGracz().kolor() != kolor) return;
 
@@ -685,7 +638,6 @@ void ChinczykWindow::obsluzMsgKlient(const QJsonObject& msg)
         m_lblSiec->setText("Siec: Klient (" + kolorNaTekst(m_mojKolor) + ")");
         statusBar()->showMessage("Dolaczono do lobby. Slot: " + QString::number(m_mojSlot), 6000);
 
-        // wklej lobby z welcome (players[])
         QJsonObject lobby;
         lobby["t"] = "CH_LOBBY";
         lobby["totalPlayers"] = m_totalPlayers;
@@ -706,15 +658,11 @@ void ChinczykWindow::obsluzMsgKlient(const QJsonObject& msg)
     {
         m_totalPlayers = msg["totalPlayers"].toInt();
 
-        // klient nie wybiera liczby graczy
         m_comboGracze->setEnabled(false);
         int idx = (m_totalPlayers == 2 ? 0 : (m_totalPlayers == 3 ? 1 : 2));
         m_comboGracze->setCurrentIndex(idx);
 
-        // WAŻNE: wywal wszystko co klient miał lokalnie (to usuwa "rozpierdol")
         if (m_scena) m_scena->resetujTlo();
-
-        // wczytaj identyczny stan jak host
         m_gra.nowaGra(m_totalPlayers);
         m_gra.ustawStanJson(msg["state"].toObject());
 
@@ -730,13 +678,9 @@ void ChinczykWindow::obsluzMsgKlient(const QJsonObject& msg)
         if (!m_graRozpoczeta) return;
 
         QJsonObject st = msg.value("state").toObject();
-
-        // Klucz: wywal stare TokenItemy zanim ustawisz nowy stan
         if (m_scena) m_scena->resetujTlo();
 
         m_gra.ustawStanJson(st);
-
-        // od razu odrysuj
         m_scena->odswiez();
         odswiezUiSieci();
         return;
@@ -751,7 +695,6 @@ void ChinczykWindow::obsluzMsgKlient(const QJsonObject& msg)
 
 void ChinczykWindow::closeEvent(QCloseEvent* e)
 {
-    // sprzatanie sieci
     if (m_siecAktywna)
     {
         if (m_jestemHostem)
@@ -784,4 +727,5 @@ bool ChinczykWindow::lobbyPelne() const
     if (m_totalPlayers <= 0) return false;
     return liczbaPolaczonychWLobby() >= m_totalPlayers;
 }
+
 
